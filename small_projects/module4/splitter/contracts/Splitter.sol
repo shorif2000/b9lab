@@ -60,4 +60,8 @@ contract Splitter {
         
         return true;
     }
+
+    function kill() {
+        if (msg.sender == alice) selfdestruct(owner);
+    }
 }
