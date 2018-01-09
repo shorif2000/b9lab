@@ -15,7 +15,10 @@ contract Splitter {
     }
     
     SplitterStruct[] public splitStructs;
-    
+	
+	mapping(address => uint) public recipientBalances;
+	
+	
     function Splitter(address bobAddress, address carolAddress){
         bob = bobAddress;
         carol = carolAddress;
@@ -27,20 +30,16 @@ contract Splitter {
         returns(bool success)
     {
         if(msg.value==0) throw;
-        if(!bob.send(msg.value/2) && !carol.send(msg.value/2)) throw;
-        SplitterStruct memory newPayment;
-        newPayment.payee = bob;
-        newPayment.amount = msg.value/2;
-        splitStructs.push(newPayment);
-        newPayment.payee = carol;
-        newPayment.amount = msg.value/2;
-        splitStructs.push(newPayment);
+		if(msg.value%2!=0) throw;
+        if(!recipientBalances[bob].transfer(msg.value/2) && !recipientBalances[carol].transfer(msg.value/2)) throw;
+
         return true;
     }
     
     function checkBalance
         public
         constant
+		returns(uint amount)
     {
         
     }
