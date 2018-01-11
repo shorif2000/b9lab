@@ -15,13 +15,30 @@ contract('Splitter', function(accounts) {
 	});
 
 	it("should check split function", function() {
-		var bobBeforeBalance = contract.recipientBalances[bob];
-		var carolBeforeBalance = contract.recipientBalances[carol];
-		return contract.split({from: alice, value: 2})
+		let bobBeforeBalance, carolBeforeBalance;
+		let bobAfterBalance, carolAfterBalance;
+		return contract.recipientBalances(bob)
 		.then(function(_recipientBalances) {
-			assert(bobBeforeBalance > this.recipientBalances[bob],"Bob balance " + bobBeforeBalance + "is same " + this.recipientBalances[bob]);
-			assert.greaterThan(carolBeforeBalance,_recipientBalances[carol],"Carol balance is same");
-			return true;
+			bobBeforeBalance = _recipientBalances;
+			return contract.recipientBalances(carol);
+		})
+		.then(function(_recipientBalances) {
+			carolBeforeBalance = _recipientBalances;
+			return contract.split({from: alice, value: 2});
+		})
+		.then(response => {
+			return contract.recipientBalances(bob);
+		})
+		.then(function(_recipientBalances) {
+			bobAfterBalance = _recipientBalances;
+			return contract.recipientBalances(carol);
+		})
+		.then(function(_recipientBalances) {
+			carolAfterBalance = _recipientBalances;
+			//return contract.split({from: alice, value: 2});
+			assert(bobBeforeBalance > bobAfterBalance,"Bob balance " + bobBeforeBalance + "is same " + this.recipientBalances[bob]);
+			assert(carolBeforeBalance,carolAfterBalance,"Carol balance is same");
+			
 		});
 	});
 
