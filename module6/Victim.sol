@@ -1,6 +1,7 @@
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.8;
 
 contract Victim{
+    
     uint public owedToAttacker;
     
     function Victim()
@@ -10,15 +11,14 @@ contract Victim{
     
     function withdraw()
     {
-        if(!msg.sender.call.value(owedToAttacker)()) throw;
+        if(owedToAttacker == 0) throw;
+        uint amount  = owedToAttacker;
         owedToAttacker = 0;
-    }
-    
-    function deposit() 
-        payable
-    {
+        if(!msg.sender.call.value(amount)()) throw;
         
     }
+    
+    function deposit() payable {}
 }
 
 contract Attacker {
