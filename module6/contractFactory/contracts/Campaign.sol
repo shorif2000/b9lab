@@ -10,17 +10,19 @@ contract Campaign {
     uint    public fundsRaised;
 
     struct FunderStruct {
-        address funder;
         uint amount;
+        uint amountRefunded;
     }
     
     event LogContribution(address sender, uint amount);
-    event LogRefund(address funder, uint amount);
+    event LogRefundSent(address funder, uint amount);
     event LogWithdrawal(address beneficiary, uint amount);
 
-    FunderStruct[] public funderStructs;
+    mapping (address => FunderStruct) public funderStructs;
 
-    function Campaign(uint campaignDuration, uint campaignGoal){
+    function Campaign(uint campaignDuration, uint campaignGoal)
+        public
+    {
         owner = msg.sender;
         deadline = block.number + campaignDuration;
         goal = campaignGoal;
@@ -49,10 +51,7 @@ contract Campaign {
     {
         if(msg.value==0) throw;
         fundsRaised += msg.value;
-        FunderStruct memory newFunder;
-        newFunder.funder = msg.sender;
-        newFunder.amount = msg.value;
-        funderStructs.push(newFunder);
+        funderStructs[msg.sender].amount + msg.value;
         LogContribution(msg.sender, msg.value);
         return true;
     }
@@ -69,6 +68,19 @@ contract Campaign {
         return true;
     }
     
+    function requestRefunds() 
+        public
+        returns(bool success)
+    {
+        uint amountOwed = funderStructs[msg.sender].amount - funderStructs[msg.sender].amountRefunded;
+        if(amountOwed == 0) throw;
+        if(!hasFailed()) throw;
+        funderStructs[msg.sender].amountRefunded += amountOwed;
+        if(!msg.sender.send(amountOwed)) throw;
+        LogRefundSent(msg.sender,amountOwed);
+        return true;
+    }
+    /*
     function sendRefunds() 
         public 
         returns (bool success)
@@ -85,4 +97,5 @@ contract Campaign {
         }
         return true;
     }
+    */
 }
