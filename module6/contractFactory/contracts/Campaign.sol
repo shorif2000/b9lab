@@ -10,7 +10,7 @@ contract Campaign {
     uint    public fundsRaised;
 
     struct FunderStruct {
-        uint amount;
+        uint amountContributed;
         uint amountRefunded;
     }
     
@@ -51,7 +51,7 @@ contract Campaign {
     {
         if(msg.value==0) throw;
         fundsRaised += msg.value;
-        funderStructs[msg.sender].amount + msg.value;
+        funderStructs[msg.sender].amountContributed + msg.value;
         LogContribution(msg.sender, msg.value);
         return true;
     }
@@ -72,7 +72,7 @@ contract Campaign {
         public
         returns(bool success)
     {
-        uint amountOwed = funderStructs[msg.sender].amount - funderStructs[msg.sender].amountRefunded;
+        uint amountOwed = funderStructs[msg.sender].amountContributed - funderStructs[msg.sender].amountRefunded;
         if(amountOwed == 0) throw;
         if(!hasFailed()) throw;
         funderStructs[msg.sender].amountRefunded += amountOwed;
@@ -80,22 +80,4 @@ contract Campaign {
         LogRefundSent(msg.sender,amountOwed);
         return true;
     }
-    /*
-    function sendRefunds() 
-        public 
-        returns (bool success)
-    {
-        if(msg.sender != owner) throw;
-        if(!hasFailed()) throw;
-
-        uint funderCount = funderStructs.length;
-        for(uint i=0; i<funderCount; i++){
-            if(!funderStructs[i].funder.send(funderStructs[i].amount)) {
-                
-            }
-            LogRefund(funderStructs[i].funder,funderStructs[i].amount);
-        }
-        return true;
-    }
-    */
 }
