@@ -2,35 +2,28 @@
 
 pragma solidity ^0.4.13;
 
-contract Splitter {
+import "..//library/Owned.sol";
+
+contract Splitter is Owned {
     
     address public alice;
     address public bob; 
     address public carol;
+    //address public owner;
     
     uint public totalSplitterBalance = 0;
+
     
-    struct SplitterStruct {
-        address payee;
-        uint amount;
-    }
-    
-    mapping(address => uint) public recipientBalances;
+    mapping(address => uint) public recipients;
     //$recipientBalances[$address] = $resultasuint
-    
-    
-    function Splitter(address aliceAddress, address bobAddress, address carolAddress)
+
+    function addReciepient(address _recipient)
         public
+        returns(bool addedReciepent)
     {
-        require(aliceAddress != 0x0);
-        require(bobAddress != 0x0);
-        require(carolAddress != 0x0);
-        require(aliceAddress != bobAddress);
-        require(aliceAddress != carolAddress);
-        require(bobAddress != carolAddress);
-        alice = aliceAddress;
-        bob = bobAddress;
-        carol = carolAddress;
+        require(recipients.length < 2);
+        recipients[_recipient] = 0;
+        return true;
     }
     
     function split() 
@@ -38,17 +31,17 @@ contract Splitter {
         payable 
         returns(bool success)
     {
-        require(msg.sender == alice);
+        require(msg.sender == isOwner());
         require(msg.value > 0);
         require(msg.value%2 == 0) ;
+        require(recipients.length == 2) ;
         
-        recipientBalances[bob] += msg.value/2;
-        //log here
-        recipientBalances[carol] += msg.value/2;
-        //log here
-        
-        // store total
-        totalSplitterBalance += msg.value;
+        for(uint i=0; i < recipients.length;i++){
+            recipients[i] = msg.value/2;
+            //log here
+            // store total
+            totalSplitterBalance += msg.value;
+        }
         
         return true;
     }
@@ -58,21 +51,14 @@ contract Splitter {
         returns(bool success)
     {
         // check if balance in mapping and check sender exists
-        require(recipientBalances[msg.sender] > 0 );//if(!recipientBalances[msg.sender]) throw;
-        recipientBalances[msg.sender] = 0;
+        require(recipients[msg.sender] > 0 );//if(!recipientBalances[msg.sender]) throw;
+        recipients[msg.sender] = 0;
         // log event
-        msg.sender.transfer(recipientBalances[msg.sender]);
+        msg.sender.transfer(recipients[msg.sender]);
         
         // remove from total
-        totalSplitterBalance += recipientBalances[msg.sender];
+        totalSplitterBalance += recipients[msg.sender];
         
         return true;
     }
-
-    
-/*
-    function kill() {
-        if (msg.sender == alice) selfdestruct(owner);
-    }
-    */
 }

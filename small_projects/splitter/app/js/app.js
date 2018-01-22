@@ -32,6 +32,8 @@ window.addEventListener('load', function() {
         .then(balance => {
             console.log(balance);
             $("#balance").html(balance.toString(10));
+            console.log(deployed.recipientBalances());
+            return deployed.recipientBalances();
         })
         .catch(console.error);
 });
