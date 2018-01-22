@@ -1,12 +1,14 @@
 // Splitter
 
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.13;
 
 contract Splitter {
     
     address public alice;
     address public bob; 
     address public carol;
+    
+    uint public totalSplitterBalance = 0;
     
     struct SplitterStruct {
         address payee;
@@ -45,6 +47,9 @@ contract Splitter {
         recipientBalances[carol] += msg.value/2;
         //log here
         
+        // store total
+        totalSplitterBalance += msg.value;
+        
         return true;
     }
     
@@ -58,10 +63,16 @@ contract Splitter {
         // log event
         msg.sender.transfer(recipientBalances[msg.sender]);
         
+        // remove from total
+        totalSplitterBalance += recipientBalances[msg.sender];
+        
         return true;
     }
 
+    
+/*
     function kill() {
         if (msg.sender == alice) selfdestruct(owner);
     }
+    */
 }
