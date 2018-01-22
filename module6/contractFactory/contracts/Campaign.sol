@@ -10,17 +10,19 @@ contract Campaign {
     uint    public fundsRaised;
 
     struct FunderStruct {
-        address funder;
-        uint amount;
+        uint amountContributed;
+        uint amountRefunded;
     }
     
     event LogContribution(address sender, uint amount);
-    event LogRefund(address funder, uint amount);
+    event LogRefundSent(address funder, uint amount);
     event LogWithdrawal(address beneficiary, uint amount);
 
-    FunderStruct[] public funderStructs;
+    mapping (address => FunderStruct) public funderStructs;
 
-    function Campaign(uint campaignDuration, uint campaignGoal){
+    function Campaign(uint campaignDuration, uint campaignGoal)
+        public
+    {
         owner = msg.sender;
         deadline = block.number + campaignDuration;
         goal = campaignGoal;
@@ -49,10 +51,7 @@ contract Campaign {
     {
         if(msg.value==0) throw;
         fundsRaised += msg.value;
-        FunderStruct memory newFunder;
-        newFunder.funder = msg.sender;
-        newFunder.amount = msg.value;
-        funderStructs.push(newFunder);
+        funderStructs[msg.sender].amountContributed + msg.value;
         LogContribution(msg.sender, msg.value);
         return true;
     }
@@ -69,20 +68,16 @@ contract Campaign {
         return true;
     }
     
-    function sendRefunds() 
-        public 
-        returns (bool success)
+    function requestRefunds() 
+        public
+        returns(bool success)
     {
-        if(msg.sender != owner) throw;
+        uint amountOwed = funderStructs[msg.sender].amountContributed - funderStructs[msg.sender].amountRefunded;
+        if(amountOwed == 0) throw;
         if(!hasFailed()) throw;
-
-        uint funderCount = funderStructs.length;
-        for(uint i=0; i<funderCount; i++){
-            if(!funderStructs[i].funder.send(funderStructs[i].amount)) {
-                
-            }
-            LogRefund(funderStructs[i].funder,funderStructs[i].amount);
-        }
+        funderStructs[msg.sender].amountRefunded += amountOwed;
+        if(!msg.sender.send(amountOwed)) throw;
+        LogRefundSent(msg.sender,amountOwed);
         return true;
     }
 }
