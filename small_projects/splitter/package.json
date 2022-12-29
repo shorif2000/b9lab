@@ -10,9 +10,9 @@
   "license": "ISC",
   "devDependencies": {
     "create-html": "^4.1.0",
-    "file-loader": "^1.1.6",
+    "file-loader": "^6.2.0",
     "truffle": "^4.0.4",
-    "webpack": "^3.10.0"
+    "webpack": "^5.75.0"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
